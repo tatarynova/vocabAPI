@@ -7,6 +7,7 @@ export const db = createClient({
 
 // context will hold actual statement the word was found in
 // last four attributes are for spaced repition
+
 export async function initDb() {
   await db.execute(`
     CREATE TABLE IF NOT EXISTS words (

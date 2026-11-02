@@ -1,3 +1,4 @@
+import { schedule } from './srs.js';
 import express from 'express';
 import { db, initDb } from './db.js';
 import { lookUp } from './dictionary.js';
@@ -52,6 +53,29 @@ app.delete('/words/:id', async (req, res) => {
 });
 
 // --- Days 3 and 4: new routes go here, above the error handler ---
+app.get('/review', async (req, res) => {
+  const result = await db.execute(
+    `SELECT * FROM words WHERE due_at <= datetime('now') ORDER BY due_at LIMIT 20`
+  );
+  res.json(result.rows);
+});
+
+app.post('/review/:id', async (req, res) => {
+  const grade = Number(req.body.grade);
+  if (![0, 1, 2, 3].includes(grade)) {
+    return res.status(400).json({ error: 'grade must be 0, 1, 2 or 3' });
+  }
+  const found = await db.execute({ sql: 'SELECT * FROM words WHERE id = ?', args: [req.params.id] });
+  const card = found.rows[0];
+  if (!card) return res.status(404).json({ error: 'word not found' });
+
+  const next = schedule(card, grade);
+  await db.execute({
+    sql: `UPDATE words SET ease = ?, interval_days = ?, repetitions = ?, due_at = ? WHERE id = ?`,
+    args: [next.ease, next.interval_days, next.repetitions, next.due_at, card.id],
+  });
+  res.json({ id: card.id, ...next });
+});
 
 app.use((err, req, res, next) => {
   console.error(err);

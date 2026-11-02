@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Word Practice</title>
+    <style>
+      :root {
+        --bg: #faf7f2;
+        --card: #fff;
+        --ink: #222;
+        --muted: #777;
+        --accent: #5b4bdb;
+        --line: #e6e0d6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #17161a;
+          --card: #232228;
+          --ink: #eee;
+          --muted: #999;
+          --accent: #9d92ff;
+          --line: #333;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          17px/1.5 Georgia,
+          serif;
+      }
+      main {
+        max-width: 520px;
+        margin: 0 auto;
+        padding: 24px 16px;
+      }
+      h1 {
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 24px;
+      }
+      .word {
+        font-size: 2rem;
+        margin: 0 0 8px;
+      }
+      .context {
+        color: var(--muted);
+        font-style: italic;
+      }
+      .definition {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 12px;
+        cursor: pointer;
+        background: var(--line);
+        color: var(--ink);
+      }
+      button.primary {
+        background: var(--accent);
+        color: #fff;
+        width: 100%;
+        margin-top: 16px;
+      }
+      .grades {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-top: 16px;
+      }
+      textarea,
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--bg);
+        color: var(--ink);
+        margin-top: 12px;
+      }
+      .hidden {
+        display: none;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-top: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Word practice</h1>
+
+      <!-- Asked once: your API key, remembered in this browser -->
+      <div id="setup" class="card hidden">
+        <p>Enter your API key to start.</p>
+        <input id="keyInput" type="password" placeholder="API key" />
+        <button class="primary" onclick="saveKey()">Start</button>
+      </div>
+
+      <div id="practice" class="card hidden">
+        <p class="word" id="word"></p>
+        <p class="context" id="context"></p>
+        <button class="primary" id="revealBtn" onclick="reveal()">
+          Show meaning
+        </button>
+
+        <div id="answer" class="hidden">
+          <p class="definition" id="definition"></p>
+          <p class="note">How well did you remember it?</p>
+          <div class="grades">
+            <button onclick="grade(0)">Forgot</button>
+            <button onclick="grade(1)">Hard</button>
+            <button onclick="grade(2)">Good</button>
+            <button onclick="grade(3)">Easy</button>
+          </div>
+
+          <!-- AI practice: only works if the server has an Anthropic key -->
+          <textarea
+            id="mySentence"
+            rows="2"
+            placeholder="Optional: use the word in your own sentence"
+          ></textarea>
+          <button onclick="check()">Check my sentence</button>
+          <p class="note" id="feedback"></p>
+        </div>
+      </div>
+
+      <p id="status" class="note"></p>
+    </main>
+
+    <script>
+      let apiKey = "";
+      let queue = []; // words due today
+      let current = null;
+
+      // localStorage can fail in private mode, so wrap it.
+      try {
+        apiKey = localStorage.getItem("vocabKey") || "";
+      } catch {}
+
+      // A tiny wrapper around fetch that always sends the key.
+      async function api(path, options = {}) {
+        const res = await fetch(path, {
+          ...options,
+          headers: { "Content-Type": "application/json", "x-api-key": apiKey },
+        });
+        if (res.status === 401) {
+          showSetup();
+          throw new Error("bad key");
+        }
+        return res.json();
+      }
+
+      function showSetup() {
+        document.getElementById("setup").classList.remove("hidden");
+        document.getElementById("practice").classList.add("hidden");
+      }
+
+      function saveKey() {
+        apiKey = document.getElementById("keyInput").value.trim();
+        try {
+          localStorage.setItem("vocabKey", apiKey);
+        } catch {}
+        document.getElementById("setup").classList.add("hidden");
+        load();
+      }
+
+      async function load() {
+        queue = await api("/review");
+        next();
+      }
+
+      function next() {
+        current = queue.shift();
+        const status = document.getElementById("status");
+        if (!current) {
+          document.getElementById("practice").classList.add("hidden");
+          status.textContent =
+            "Nothing due — come back tomorrow, or save some new words!";
+          return;
+        }
+        status.textContent = `${queue.length} more after this one`;
+        document.getElementById("practice").classList.remove("hidden");
+        document.getElementById("word").textContent = current.word;
+        document.getElementById("context").textContent = current.context
+          ? `“${current.context}”`
+          : "";
+        document.getElementById("definition").textContent =
+          current.definition || "No definition saved.";
+        document.getElementById("answer").classList.add("hidden");
+        document.getElementById("revealBtn").classList.remove("hidden");
+        document.getElementById("mySentence").value = "";
+        document.getElementById("feedback").textContent = "";
+      }
+
+      function reveal() {
+        document.getElementById("answer").classList.remove("hidden");
+        document.getElementById("revealBtn").classList.add("hidden");
+      }
+
+      async function grade(g) {
+        await api(`/review/${current.id}`, {
+          method: "POST",
+          body: JSON.stringify({ grade: g }),
+        });
+        next();
+      }
+
+      async function check() {
+        const sentence = document.getElementById("mySentence").value.trim();
+        if (!sentence) return;
+        const fb = document.getElementById("feedback");
+        fb.textContent = "Checking…";
+        const out = await api(`/check/${current.id}`, {
+          method: "POST",
+          body: JSON.stringify({ sentence }),
+        });
+        fb.textContent = out.error
+          ? out.error
+          : `${out.correct ? "✅" : "✏️"} ${out.feedback}${out.better !== sentence ? ` Try: “${out.better}”` : ""}`;
+      }
+
+      // Start: try with the saved key (or none, for local dev).
+      load().catch(() => {});
+    </script>
+  </body>
+</html>

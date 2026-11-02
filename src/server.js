@@ -9,7 +9,11 @@ app.use(express.static('public'));
 
 app.get('/health', (req, res) => res.json({ ok: true }));
 
-// --- Day 2: the API-key check goes here ---
+app.use((req, res, next) => {
+  if (!process.env.API_KEY) return next(); // no key set = allow (local only)
+  if (req.get('x-api-key') === process.env.API_KEY) return next();
+  res.status(401).json({ error: 'Missing or wrong API key' });
+});
 
 app.post('/words', async (req, res) => {
   const word = cleanWord(req.body.word);

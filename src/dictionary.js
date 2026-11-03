@@ -1,6 +1,5 @@
-// TO-DO: add up russian translation API
 export async function lookUp(word) {
-  const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`;
+  const url = `https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(word)}`;
   try {
     const res = await fetch(url, {
       headers: { 'User-Agent': 'VocabAPI/1.0 (github.com/YOUR_GITHUB_NAME/vocab-api)' },
@@ -10,12 +9,13 @@ export async function lookUp(word) {
       return null;
     }
     const data = await res.json();
-    const meaning = data[0]?.meanings?.[0];
+    const entry = data.en?.[0]; // English entries only
+    const html = entry?.definitions?.[0]?.definition;
     return {
-      definition: meaning?.definitions?.[0]?.definition ?? null,
-      partOfSpeech: meaning?.partOfSpeech ?? null,
+      definition: html ? html.replace(/<[^>]*>/g, '').trim() : null, // strip HTML tags
+      partOfSpeech: entry?.partOfSpeech?.toLowerCase() ?? null,
     };
-  } catch {
+  } catch (err) {
     console.error(`Dictionary lookup for "${word}" failed:`, err.message);
     return null;
   }

@@ -25,6 +25,17 @@ export async function defineInContext(word, context) {
   return out.definition ?? null;
 }
 
+export async function translateInContext(word, context) {
+  if (!client) return null;
+  const out = await askForJson(
+    `Sentence: "${context || word}"\n` +
+      `Translate the English word "${word}" into Russian, using the meaning it has in this sentence. ` +
+      `Give the dictionary form (infinitive for verbs, nominative singular for nouns), one or two words. ` +
+      `Reply only with JSON: {"translation": "..."}`
+  );
+  return out.translation ?? null;
+}
+
 export async function makeQuiz(word, definition) {
   if (!client) return null;
   return askForJson(

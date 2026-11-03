@@ -3,7 +3,10 @@ export async function lookUp(word) {
   const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`;
   try {
     const res = await fetch(url);
-    if (!res.ok) return null; // 404 = word not found
+    if (!res.ok) {
+      console.error(`Dictionary lookup for "${word}" failed: HTTP ${res.status}`);
+      return null;
+    }
     const data = await res.json();
     const meaning = data[0]?.meanings?.[0];
     return {
@@ -11,6 +14,7 @@ export async function lookUp(word) {
       partOfSpeech: meaning?.partOfSpeech ?? null,
     };
   } catch {
-    return null; // save the word even if user is offline
+    console.error(`Dictionary lookup for "${word}" failed:`, err.message);
+    return null;
   }
 }

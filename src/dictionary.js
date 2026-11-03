@@ -8,7 +8,17 @@ export async function lookUp(word) {
       console.error(`Dictionary lookup for "${word}" failed: HTTP ${res.status}`);
       return null;
     }
-    const data = await res.json();
+    // const data = await res.json();
+const data = await res.json();
+for (const entry of data.en ?? []) {
+  for (const d of entry.definitions ?? []) {
+    const text = d.definition?.replace(/<[^>]*>/g, '').trim();
+    if (text) {
+      return { definition: text, partOfSpeech: entry.partOfSpeech?.toLowerCase() ?? null };
+    }
+  }
+}
+return null; // nothing usable found
     const entry = data.en?.[0]; // English entries only
     const html = entry?.definitions?.[0]?.definition;
     return {

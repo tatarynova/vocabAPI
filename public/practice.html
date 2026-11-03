@@ -112,14 +112,11 @@
   <body>
     <main>
       <h1>Word practice</h1>
-
-      <!-- Asked once: your API key, remembered in this browser -->
       <div id="setup" class="card hidden">
         <p>Enter your API key to start.</p>
         <input id="keyInput" type="password" placeholder="API key" />
         <button class="primary" onclick="saveKey()">Start</button>
       </div>
-
       <div id="practice" class="card hidden">
         <p class="word" id="word"></p>
         <p class="context" id="context"></p>
@@ -129,15 +126,6 @@
 
         <div id="answer" class="hidden">
           <p class="definition" id="definition"></p>
-          <p class="note">How well did you remember it?</p>
-          <div class="grades">
-            <button onclick="grade(0)">Forgot</button>
-            <button onclick="grade(1)">Hard</button>
-            <button onclick="grade(2)">Good</button>
-            <button onclick="grade(3)">Easy</button>
-          </div>
-
-          <!-- AI practice: only works if the server has an Anthropic key -->
           <textarea
             id="mySentence"
             rows="2"
@@ -145,6 +133,14 @@
           ></textarea>
           <button onclick="check()">Check my sentence</button>
           <p class="note" id="feedback"></p>
+
+          <p class="note">How well did you remember it?</p>
+          <div class="grades">
+            <button onclick="grade(0)">Forgot</button>
+            <button onclick="grade(1)">Hard</button>
+            <button onclick="grade(2)">Good</button>
+            <button onclick="grade(3)">Easy</button>
+          </div>
         </div>
       </div>
 

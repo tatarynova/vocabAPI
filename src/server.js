@@ -1,3 +1,4 @@
+import { aiEnabled, defineInContext, makeQuiz, checkSentence } from './ai.js';
 import { schedule } from './srs.js';
 import express from 'express';
 import { db, initDb } from './db.js';
@@ -8,7 +9,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
-app.get('/health', (req, res) => res.json({ ok: true }));
+app.get('/health', (req, res) => res.json({ ok: true, ai: aiEnabled }));
 
 app.use((req, res, next) => {
   if (!process.env.API_KEY) return next(); // no key set = allow (local only)
@@ -23,7 +24,13 @@ app.post('/words', async (req, res) => {
   if (!word) return res.status(400).json({ error: 'word is required' });
 
   const dict = await lookUp(word);
-  const definition = dict?.definition ?? null;
+//   const definition = dict?.definition ?? null;
+  let definition = dict?.definition ?? null;
+  try {
+  definition = (await defineInContext(word, context)) ?? definition;
+  } catch (err) {
+  console.error('AI definition failed:', err.message);
+  }
 
   const result = await db.execute({
     sql: `INSERT INTO words (word, definition, part_of_speech, context, source)
@@ -52,7 +59,26 @@ app.delete('/words/:id', async (req, res) => {
   res.status(204).end();
 });
 
-// --- Days 3 and 4: new routes go here, above the error handler ---
+async function getWord(id) {
+  const r = await db.execute({ sql: 'SELECT * FROM words WHERE id = ?', args: [id] });
+  return r.rows[0];
+}
+
+app.get('/quiz/:id', async (req, res) => {
+  if (!aiEnabled) return res.status(503).json({ error: 'AI is not configured' });
+  const w = await getWord(req.params.id);
+  if (!w) return res.status(404).json({ error: 'word not found' });
+  res.json(await makeQuiz(w.word, w.definition));
+});
+
+app.post('/check/:id', async (req, res) => {
+  if (!aiEnabled) return res.status(503).json({ error: 'AI is not configured' });
+  const w = await getWord(req.params.id);
+  if (!w) return res.status(404).json({ error: 'word not found' });
+  if (!req.body.sentence) return res.status(400).json({ error: 'sentence is required' });
+  res.json(await checkSentence(w.word, w.definition, req.body.sentence));
+});
+
 app.get('/review', async (req, res) => {
   const result = await db.execute(
     `SELECT * FROM words WHERE due_at <= datetime('now') ORDER BY due_at LIMIT 20`

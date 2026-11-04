@@ -567,7 +567,7 @@
         renderFeedback();
         const out = await api(`/check/${current.id}`, {
           method: "POST",
-          body: JSON.stringify({ sentence }),
+          body: JSON.stringify({ sentence, lang }),
         });
         lastFeedback = { out, sentence };
         renderFeedback();

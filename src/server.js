@@ -5,6 +5,7 @@ import { db, initDb } from './db.js';
 import { lookUp } from './dictionary.js';
 import { cleanContext, cleanWord } from './clean.js';
 
+const FEEDBACK_LANGUAGES = { ru: 'Russian', en: 'English' };
 const app = express();
 app.use(express.json());
 app.use(express.static('public'));
@@ -88,7 +89,8 @@ app.post('/check/:id', async (req, res) => {
   const w = await getWord(req.params.id);
   if (!w) return res.status(404).json({ error: 'word not found' });
   if (!req.body.sentence) return res.status(400).json({ error: 'sentence is required' });
-  res.json(await checkSentence(w.word, w.definition, req.body.sentence));
+  const language = FEEDBACK_LANGUAGES[req.body.lang] ?? 'English';
+  res.json(await checkSentence(w.word, w.definition, req.body.sentence, language));
 });
 
 app.get('/review', async (req, res) => {

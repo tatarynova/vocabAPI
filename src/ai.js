@@ -45,12 +45,13 @@ export async function makeQuiz(word, definition) {
   );
 }
 
-export async function checkSentence(word, definition, sentence) {
+export async function checkSentence(word, definition, sentence, language = 'English') {
   if (!client) return null;
   return askForJson(
-    `A learner is practising the word "${word}" (meaning: ${definition ?? 'unknown'}).\n` +
+    `A learner is practising the English word "${word}" (meaning: ${definition ?? 'unknown'}).\n` +
       `Their sentence: "${sentence}"\n` +
       `Is the word used correctly and naturally? Be kind and brief. ` +
+      `Write "feedback" in ${language}. Keep "better" in English, because it is the corrected English sentence. ` +
       `Reply only with JSON: {"correct": true|false, "feedback": "one or two sentences", "better": "an improved version, or the same sentence if fine"}`
   );
 }

@@ -1,28 +1,53 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Word Practice</title>
     <style>
       :root {
-        --bg: #faf7f2;
-        --card: #fff;
-        --ink: #222;
-        --muted: #777;
-        --accent: #5b4bdb;
-        --line: #e6e0d6;
+        --bg: #f3f0e8;
+        --card: #ffffff;
+        --ink: #1d2433;
+        --muted: #6b6f7a;
+        --line: #e3ddd1;
+        --accent: #2f6f62;
+        --definition: #3557a0;
+        --translation: #b0472f;
+        --practice: #7a4fa0;
+        --rating: #8a6a14;
+        --forgot-bg: #fbe3df;
+        --forgot-ink: #9b2c20;
+        --hard-bg: #fbeed3;
+        --hard-ink: #865600;
+        --good-bg: #dff0e4;
+        --good-ink: #1d6a39;
+        --easy-bg: #dfe9f9;
+        --easy-ink: #1f4d8c;
       }
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #17161a;
-          --card: #232228;
-          --ink: #eee;
-          --muted: #999;
-          --accent: #9d92ff;
-          --line: #333;
+          --bg: #15171c;
+          --card: #1f222a;
+          --ink: #eceef2;
+          --muted: #9aa0ab;
+          --line: #2f333d;
+          --accent: #5fb8a5;
+          --definition: #8fa9e6;
+          --translation: #ec9a85;
+          --practice: #c3a2e3;
+          --rating: #dcc06e;
+          --forgot-bg: #3b2321;
+          --forgot-ink: #f3aaa0;
+          --hard-bg: #3a2f17;
+          --hard-ink: #f0cd7c;
+          --good-bg: #1d3426;
+          --good-ink: #95d9ab;
+          --easy-bg: #1e2b40;
+          --easy-ink: #a5c3f2;
         }
       }
+
       * {
         box-sizing: border-box;
       }
@@ -31,134 +56,405 @@
         background: var(--bg);
         color: var(--ink);
         font:
-          17px/1.5 Georgia,
-          serif;
+          17px/1.5 -apple-system,
+          system-ui,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
       }
       main {
         max-width: 520px;
         margin: 0 auto;
-        padding: 24px 16px;
+        padding: 20px 16px 40px;
+      }
+
+      /* ---------- Header: title + language switch ---------- */
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
       }
       h1 {
-        font-size: 1rem;
-        letter-spacing: 0.08em;
-        margin: 0 auto;
-        text-transform: uppercase;
-        color: var(--muted);
+        font-size: 1.25rem;
+        margin: 0;
       }
-      .card {
+      .lang {
+        display: flex;
+        background: var(--line);
+        border-radius: 999px;
+        padding: 3px;
+      }
+      .lang button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      .lang button[aria-pressed="true"] {
+        background: var(--card);
+        color: var(--ink);
+      }
+      .status {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin: 6px 0 16px;
+        min-height: 1.4em;
+      }
+
+      /* ---------- Blocks: one card per part, each with a label ---------- */
+      .block {
         background: var(--card);
         border: 1px solid var(--line);
+        border-left: 5px solid var(--block-colour, var(--accent));
         border-radius: 14px;
-        padding: 24px;
+        padding: 16px 18px;
+        margin-bottom: 12px;
       }
+      .label {
+        margin: 0 0 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--block-colour, var(--accent));
+      }
+      .block-word {
+        --block-colour: var(--accent);
+      }
+      .block-definition {
+        --block-colour: var(--definition);
+      }
+      .block-translation {
+        --block-colour: var(--translation);
+      }
+      .block-practice {
+        --block-colour: var(--practice);
+      }
+      .block-rating {
+        --block-colour: var(--rating);
+      }
+
       .word {
-        font-size: 2rem;
-        margin: 0 0 8px;
+        font:
+          600 2.1rem/1.2 Georgia,
+          "Times New Roman",
+          serif;
+        margin: 0;
       }
       .context {
         color: var(--muted);
         font-style: italic;
+        margin: 8px 0 0;
       }
-      .definition {
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid var(--line);
+      .meaning {
+        margin: 0;
       }
+      .translation {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+      }
+      .empty {
+        color: var(--muted);
+        font-style: italic;
+      }
+
+      /* ---------- Controls ---------- */
       button,
       input,
       textarea {
         font: inherit;
       }
-      button {
+      .primary {
+        width: 100%;
         border: 0;
-        border-radius: 10px;
-        padding: 12px;
-        cursor: pointer;
-        background: var(--line);
-        color: var(--ink);
-      }
-      button.primary {
+        border-radius: 12px;
+        padding: 14px;
         background: var(--accent);
         color: #fff;
-        width: 100%;
-        margin-top: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 12px;
       }
-      .grades {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        margin-top: 16px;
+      @media (prefers-color-scheme: dark) {
+        .primary {
+          color: #10201c;
+        }
+      }
+      .secondary {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 14px;
+        background: transparent;
+        color: var(--ink);
+        cursor: pointer;
+        margin-top: 10px;
       }
       textarea,
-      input {
+      input[type="password"] {
         width: 100%;
-        padding: 10px;
+        padding: 10px 12px;
         border: 1px solid var(--line);
         border-radius: 10px;
         background: var(--bg);
         color: var(--ink);
-        margin-top: 12px;
       }
-      .hidden {
+      .feedback {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin: 10px 0 0;
+      }
+      .feedback:empty {
         display: none;
       }
-      .note {
-        color: var(--muted);
+
+      .grades {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .grades button {
+        border: 0;
+        border-radius: 10px;
+        padding: 12px 4px;
+        cursor: pointer;
         font-size: 0.9rem;
-        margin-top: 12px;
+        font-weight: 600;
+      }
+      .g-forgot {
+        background: var(--forgot-bg);
+        color: var(--forgot-ink);
+      }
+      .g-hard {
+        background: var(--hard-bg);
+        color: var(--hard-ink);
+      }
+      .g-good {
+        background: var(--good-bg);
+        color: var(--good-ink);
+      }
+      .g-easy {
+        background: var(--easy-bg);
+        color: var(--easy-ink);
+      }
+
+      .hidden {
+        display: none;
       }
     </style>
   </head>
   <body>
     <main>
-      <h1>Word practice</h1>
-      <div id="setup" class="card hidden">
-        <p>Enter your API key to start.</p>
-        <input id="keyInput" type="password" placeholder="API key" />
-        <button class="primary" onclick="saveKey()">Start</button>
-      </div>
-      <div id="practice" class="card hidden">
-        <p class="word" id="word"></p>
-        <p class="context" id="context"></p>
-        <button class="primary" id="revealBtn" onclick="reveal()">
-          Show meaning
-        </button>
+      <header class="top">
+        <h1 data-i18n="title"></h1>
+        <div class="lang" role="group" aria-label="Language">
+          <button data-lang="ru" onclick="setLanguage('ru')">RU</button>
+          <button data-lang="en" onclick="setLanguage('en')">EN</button>
+        </div>
+      </header>
+      <p id="status" class="status"></p>
+
+      <!-- Asked once: your API key, remembered in this browser -->
+      <section id="setup" class="block hidden">
+        <h2 class="label" data-i18n="labelKey"></h2>
+        <p data-i18n="enterKey"></p>
+        <input
+          id="keyInput"
+          type="password"
+          data-i18n-placeholder="keyPlaceholder"
+        />
+        <button
+          class="primary"
+          style="margin: 12px 0 0"
+          onclick="saveKey()"
+          data-i18n="start"
+        ></button>
+      </section>
+
+      <div id="practice" class="hidden">
+        <section class="block block-word">
+          <h2 class="label" data-i18n="labelWord"></h2>
+          <p class="word" id="word"></p>
+          <p class="context" id="context"></p>
+        </section>
+
+        <button
+          class="primary"
+          id="revealBtn"
+          onclick="reveal()"
+          data-i18n="showMeaning"
+        ></button>
 
         <div id="answer" class="hidden">
-          <p class="definition" id="definition"></p>
-          <textarea
-            id="mySentence"
-            rows="2"
-            placeholder="Optional: use the word in your own sentence"
-          ></textarea>
-          <button onclick="check()">Check my sentence</button>
-          <p class="note" id="feedback"></p>
+          <section class="block block-translation">
+            <h2 class="label" data-i18n="labelTranslation"></h2>
+            <p class="translation" id="translation" lang="ru"></p>
+          </section>
 
-          <p class="note">How well did you remember it?</p>
-          <div class="grades">
-            <button onclick="grade(0)">Forgot</button>
-            <button onclick="grade(1)">Hard</button>
-            <button onclick="grade(2)">Good</button>
-            <button onclick="grade(3)">Easy</button>
-          </div>
+          <section class="block block-definition">
+            <h2 class="label" data-i18n="labelDefinition"></h2>
+            <p class="meaning" id="definition"></p>
+          </section>
+
+          <section class="block block-practice">
+            <h2 class="label" data-i18n="labelPractice"></h2>
+            <textarea
+              id="mySentence"
+              rows="2"
+              data-i18n-placeholder="sentencePlaceholder"
+            ></textarea>
+            <button
+              class="secondary"
+              onclick="check()"
+              data-i18n="checkSentence"
+            ></button>
+            <p class="feedback" id="feedback"></p>
+          </section>
+
+          <section class="block block-rating">
+            <h2 class="label" data-i18n="labelRating"></h2>
+            <div class="grades">
+              <button
+                class="g-forgot"
+                onclick="grade(0)"
+                data-i18n="forgot"
+              ></button>
+              <button
+                class="g-hard"
+                onclick="grade(1)"
+                data-i18n="hard"
+              ></button>
+              <button
+                class="g-good"
+                onclick="grade(2)"
+                data-i18n="good"
+              ></button>
+              <button
+                class="g-easy"
+                onclick="grade(3)"
+                data-i18n="easy"
+              ></button>
+            </div>
+          </section>
         </div>
       </div>
-
-      <p id="status" class="note"></p>
     </main>
 
     <script>
-      let apiKey = "";
-      let queue = []; // words due today
-      let current = null;
+      // ---------- Interface text, one block per language ----------
+      const TEXT = {
+        ru: {
+          title: "Практика слов",
+          labelKey: "Вход",
+          enterKey: "Введите ваш API-ключ, чтобы начать.",
+          keyPlaceholder: "API-ключ",
+          start: "Начать",
+          labelWord: "Слово",
+          showMeaning: "Показать значение",
+          labelDefinition: "Определение (англ.)",
+          labelTranslation: "Перевод",
+          labelPractice: "Практика",
+          sentencePlaceholder:
+            "Необязательно: составьте предложение с этим словом",
+          checkSentence: "Проверить предложение",
+          checking: "Проверяю…",
+          tryThis: "Лучше так:",
+          labelRating: "Насколько хорошо вы помните это слово?",
+          forgot: "Совсем не помню",
+          hard: "Трудно",
+          good: "Хорошо",
+          easy: "Знаю",
+          wordsLeft: "Осталось слов: {n}",
+          nothingDue:
+            "На сегодня всё — возвращайтесь завтра или сохраните новые слова!",
+          noDefinition: "Определение не сохранено.",
+          noTranslation: "Перевод не сохранён.",
+        },
+        en: {
+          title: "Word practice",
+          labelKey: "Sign in",
+          enterKey: "Enter your API key to start.",
+          keyPlaceholder: "API key",
+          start: "Start",
+          labelWord: "Word",
+          showMeaning: "Show meaning",
+          labelDefinition: "Definition",
+          labelTranslation: "Translation (Russian)",
+          labelPractice: "Practice",
+          sentencePlaceholder: "Optional: use the word in your own sentence",
+          checkSentence: "Check my sentence",
+          checking: "Checking…",
+          tryThis: "Try:",
+          labelRating: "How well did you remember it?",
+          forgot: "Completely forgot",
+          hard: "Hard",
+          good: "Good",
+          easy: "Easy",
+          wordsLeft: "Words left: {n}",
+          nothingDue:
+            "Nothing due — come back tomorrow, or save some new words!",
+          noDefinition: "No definition saved.",
+          noTranslation: "No translation saved.",
+        },
+      };
 
-      // localStorage can fail in private mode, so wrap it.
+      let apiKey = "";
+      let lang = "ru"; // Russian by default
+      let queue = [];
+      let current = null;
+      let loaded = false;
+      let lastFeedback = null;
+
       try {
         apiKey = localStorage.getItem("vocabKey") || "";
+        lang = localStorage.getItem("vocabLang") || "ru";
       } catch {}
 
-      // A tiny wrapper around fetch that always sends the key.
+      // Look up a piece of text in the current language.
+      // Falls back to English, then to the key itself, so a missing
+      // translation shows something instead of "undefined".
+      function t(key, values = {}) {
+        let text = TEXT[lang][key] ?? TEXT.en[key] ?? key;
+        for (const [name, value] of Object.entries(values)) {
+          text = text.replace(`{${name}}`, value);
+        }
+        return text;
+      }
+
+      // Fill every element marked with data-i18n, then redraw the parts
+      // that are built in code (status line, empty definition, feedback).
+      function applyLanguage() {
+        document.documentElement.lang = lang;
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          el.textContent = t(el.dataset.i18n);
+        });
+        document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+          el.placeholder = t(el.dataset.i18nPlaceholder);
+        });
+        document.querySelectorAll("[data-lang]").forEach((btn) => {
+          btn.setAttribute("aria-pressed", btn.dataset.lang === lang);
+        });
+        renderStatus();
+        renderMeaning();
+        renderFeedback();
+      }
+
+      function setLanguage(newLang) {
+        lang = newLang;
+        try {
+          localStorage.setItem("vocabLang", newLang);
+        } catch {}
+        applyLanguage();
+      }
+
+      // ---------- Talking to the API ----------
       async function api(path, options = {}) {
         const res = await fetch(path, {
           ...options,
@@ -187,30 +483,68 @@
 
       async function load() {
         queue = await api("/review");
+        loaded = true;
         next();
+      }
+
+      // ---------- Drawing the screen ----------
+      function renderStatus() {
+        const status = document.getElementById("status");
+        if (!loaded) status.textContent = "";
+        else if (!current) status.textContent = t("nothingDue");
+        else status.textContent = t("wordsLeft", { n: queue.length + 1 });
+      }
+
+      // Definition and translation, or a grey "not saved" note.
+      function renderMeaning() {
+        if (!current) return;
+        fill("definition", current.definition, "noDefinition");
+        fill("translation", current.translation_ru, "noTranslation");
+      }
+
+      function fill(id, value, emptyKey) {
+        const el = document.getElementById(id);
+        el.textContent = value || t(emptyKey);
+        el.classList.toggle("empty", !value);
+      }
+
+      function renderFeedback() {
+        const fb = document.getElementById("feedback");
+        if (!lastFeedback) {
+          fb.textContent = "";
+          return;
+        }
+        if (lastFeedback === "checking") {
+          fb.textContent = t("checking");
+          return;
+        }
+        const { out, sentence } = lastFeedback;
+        fb.textContent = out.error
+          ? out.error
+          : `${out.correct ? "✅" : "✏️"} ${out.feedback}` +
+            (out.better && out.better !== sentence
+              ? ` ${t("tryThis")} “${out.better}”`
+              : "");
       }
 
       function next() {
         current = queue.shift();
-        const status = document.getElementById("status");
+        lastFeedback = null;
+        renderStatus();
         if (!current) {
           document.getElementById("practice").classList.add("hidden");
-          status.textContent =
-            "Nothing due — come back tomorrow, or save some new words!";
           return;
         }
-        status.textContent = `${queue.length} more after this one`;
         document.getElementById("practice").classList.remove("hidden");
         document.getElementById("word").textContent = current.word;
         document.getElementById("context").textContent = current.context
           ? `“${current.context}”`
           : "";
-        document.getElementById("definition").textContent =
-          current.definition || "No definition saved.";
+        renderMeaning();
+        renderFeedback();
         document.getElementById("answer").classList.add("hidden");
         document.getElementById("revealBtn").classList.remove("hidden");
         document.getElementById("mySentence").value = "";
-        document.getElementById("feedback").textContent = "";
       }
 
       function reveal() {
@@ -229,18 +563,18 @@
       async function check() {
         const sentence = document.getElementById("mySentence").value.trim();
         if (!sentence) return;
-        const fb = document.getElementById("feedback");
-        fb.textContent = "Checking…";
+        lastFeedback = "checking";
+        renderFeedback();
         const out = await api(`/check/${current.id}`, {
           method: "POST",
           body: JSON.stringify({ sentence }),
         });
-        fb.textContent = out.error
-          ? out.error
-          : `${out.correct ? "✅" : "✏️"} ${out.feedback}${out.better !== sentence ? ` Try: “${out.better}”` : ""}`;
+        lastFeedback = { out, sentence };
+        renderFeedback();
       }
 
-      // Start: try with the saved key (or none, for local dev).
+      // Start: put the text in, then load today's words.
+      applyLanguage();
       load().catch(() => {});
     </script>
   </body>

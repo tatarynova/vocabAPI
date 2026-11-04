@@ -1,4 +1,4 @@
-import { aiEnabled, defineInContext, makeQuiz, checkSentence } from './ai.js';
+import { aiEnabled, defineInContext, translateInContext, makeQuiz, checkSentence } from './ai.js';
 import { schedule } from './srs.js';
 import express from 'express';
 import { db, initDb } from './db.js';
@@ -31,21 +31,33 @@ app.post('/words', async (req, res) => {
   } catch (err) {
   console.error('AI definition failed:', err.message);
   }
+  let translation = null;
+  try {
+    translation = await translateInContext(word, context);
+  } catch (err) {
+    console.error('AI translation failed:', err.message);
+  }
 
   const result = await db.execute({
-    sql: `INSERT INTO words (word, definition, part_of_speech, context, source)
-          VALUES (?, ?, ?, ?, ?)
+    sql: `INSERT INTO words (word, definition, part_of_speech, context, source, translation_ru)
+          VALUES (?, ?, ?, ?, ?, ?)
           ON CONFLICT(word) DO UPDATE SET
             context = excluded.context,
-            definition = COALESCE(excluded.definition, words.definition)
+            definition = COALESCE(excluded.definition, words.definition),
+            translation_ru = COALESCE(excluded.translation_ru, words.translation_ru)
           RETURNING *`,
-    args: [word, definition, dict?.partOfSpeech ?? null, context || null, source],
+    args: [word, definition, dict?.partOfSpeech ?? null, context || null, source, translation],
   });
   const saved = result.rows[0];
 
+  const wantsRussian = req.body.notify === 'ru';
+  const meaning = wantsRussian
+    ? (saved.translation_ru ?? saved.definition) // no translation? fall back to English
+    : saved.definition;
+
   res.status(201).json({
     ...saved,
-    message: `${saved.word}: ${saved.definition ?? 'saved (no definition found)'}`,
+    message: `${saved.word}: ${meaning ?? 'saved (no definition found)'}`,
   });
 });
 

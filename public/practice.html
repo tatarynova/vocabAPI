@@ -42,6 +42,7 @@
       h1 {
         font-size: 1rem;
         letter-spacing: 0.08em;
+        margin: 0 auto;
         text-transform: uppercase;
         color: var(--muted);
       }
@@ -120,9 +121,12 @@
       <div id="practice" class="card hidden">
         <p class="word" id="word"></p>
         <p class="context" id="context"></p>
-        <button class="primary" id="revealBtn" onclick="reveal()">
-          Show meaning
-        </button>
+        <button
+          data-i18n="showMeaning"
+          class="primary"
+          id="revealBtn"
+          onclick="reveal()"
+        ></button>
 
         <div id="answer" class="hidden">
           <p class="definition" id="definition"></p>
@@ -151,6 +155,19 @@
       let apiKey = "";
       let queue = []; // words due today
       let current = null;
+
+      const TEXT = {
+        en: {
+          showMeaning: "Show meaning",
+          forgot: "Forgot",
+          nothingDue: "Nothing due — come back tomorrow!",
+        },
+        ru: {
+          showMeaning: "Показать значение",
+          forgot: "Забыл",
+          nothingDue: "На сегодня всё — возвращайтесь завтра!",
+        },
+      };
 
       // localStorage can fail in private mode, so wrap it.
       try {

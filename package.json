@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch --env-file=.env src/server.js"
+    "dev": "node --watch --env-file=.env src/server.js",
+    "test": "node --test",
+    "test:watch": "node --test --watch"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +17,8 @@
     "@anthropic-ai/sdk": "^1.4.0",
     "@libsql/client": "^0.18.0",
     "express": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
